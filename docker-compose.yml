@@ -1,0 +1,47 @@
+version: "3.8"
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80" 
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: disaster_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+  celery-worker:
+    build:
+      context: ./backend
+    command: celery -A app.tasks worker --loglevel=info
+    depends_on:
+      - backend
+      - redis
+
+  celery-beat:
+    build:
+      context: ./backend
+    command: celery -A app.tasks beat --loglevel=info
+    depends_on:
+      - celery-worker
+      - redis
+
+volumes:
+  db_data:
