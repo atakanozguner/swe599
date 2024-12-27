@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -10,6 +11,7 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     password = Column(String)
     role = Column(String)
+
 
 class Request(Base):
     __tablename__ = "requests"
@@ -19,6 +21,7 @@ class Request(Base):
     priority = Column(Integer, nullable=False)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
+    tckn = Column(String, nullable=True)
     notes = Column(Text)
     timestamp = Column(DateTime, default=datetime.utcnow)
     status = Column(String, default="pending")

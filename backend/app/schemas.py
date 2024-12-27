@@ -1,13 +1,16 @@
 from pydantic import BaseModel
 from datetime import datetime
 
+
 class UserCreate(BaseModel):
     username: str
     password: str
 
+
 class UserLogin(BaseModel):
     username: str
     password: str
+
 
 class RequestCreate(BaseModel):
     type: str
@@ -15,7 +18,9 @@ class RequestCreate(BaseModel):
     # priority: int
     latitude: float
     longitude: float
+    tckn: str
     notes: str
+
 
 class RequestResponse(BaseModel):
     id: int
@@ -24,6 +29,7 @@ class RequestResponse(BaseModel):
     priority: int
     latitude: float
     longitude: float
+    tckn: str
     notes: str
     timestamp: datetime
     status: str
