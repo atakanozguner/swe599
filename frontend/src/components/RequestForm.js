@@ -82,7 +82,7 @@ const RequestForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const tcknRegex = /^[0-9]{11}$/;
-    if (!tcknRegex.test(formData.tckn)) {
+    if (formData.tckn && !tcknRegex.test(formData.tckn)) {
       alert("TCKN must be 11 digits long and contain only numbers.");
       return;
     }
