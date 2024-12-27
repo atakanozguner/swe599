@@ -5,6 +5,8 @@ import "leaflet/dist/leaflet.css";
 
 const Dashboard = () => {
   const [requests, setRequests] = useState([]);
+  const userRole = localStorage.getItem('role');
+  const isLoggedIn = !!localStorage.getItem('token');
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -17,6 +19,10 @@ const Dashboard = () => {
     };
     fetchRequests();
   }, []);
+
+  if (!isLoggedIn || !['administrator', 'relief-worker'].includes(userRole)) {
+    return <p>You do not have permission to view this page.</p>;
+  }
 
   return (
     <div className="container mt-4">
