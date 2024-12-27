@@ -20,6 +20,7 @@ const RequestForm = () => {
     subtype: "",
     latitude: 41.0082, // Default latitude for Istanbul
     longitude: 28.9784, // Default longitude for Istanbul
+    tckn: "",
     notes: "",
   });
 
@@ -80,11 +81,18 @@ const RequestForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const tcknRegex = /^[0-9]{11}$/;
+    if (formData.tckn && !tcknRegex.test(formData.tckn)) {
+      alert("TCKN must be 11 digits long and contain only numbers.");
+      return;
+    }
+
     const payload = {
       type: formData.type,
       subtype: formData.subtype,
       latitude: formData.latitude,
       longitude: formData.longitude,
+      tckn: formData.tckn,
       notes: formData.notes,
     };
     try {
@@ -138,6 +146,19 @@ const RequestForm = () => {
             </select>
           </div>
         )}
+
+        {/* TCKN Text Box */}
+        <div className="mb-3">
+          <label className="form-label">TCKN:</label>
+          <textarea
+            className="form-control"
+            value={formData.tckn}
+            onChange={(e) =>
+              setFormData({ ...formData, tckn: e.target.value })
+            }
+            placeholder="Enter your TCKN (Turkish ID Number, 11 digits)"
+          />
+        </div>
 
         {/* Notes Text Box */}
         <div className="mb-3">

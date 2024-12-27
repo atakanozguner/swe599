@@ -12,9 +12,13 @@ from typing import List
 
 app = FastAPI()
 
+
 @app.on_event("startup")
 def start_celery():
-    celery_app.conf.update(task_serializer="json", accept_content=["json"], result_serializer="json")
+    celery_app.conf.update(
+        task_serializer="json", accept_content=["json"], result_serializer="json"
+    )
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,9 +28,11 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+
 @app.on_event("startup")
 def startup():
     init_db()
+
 
 # Serve static files
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -45,6 +51,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 # Token blacklist for logout functionality
 token_blacklist = set()
 
+
 @app.post("/register")
 def register_user(user: schemas.UserCreate, key: str, db: Session = Depends(get_db)):
     # Determine the role based on the key
@@ -61,9 +68,14 @@ def register_user(user: schemas.UserCreate, key: str, db: Session = Depends(get_
 
     try:
         created_user = crud.create_user(db, user_data)
-        return {"message": "Registration successful", "username": created_user.username, "role": created_user.role}
+        return {
+            "message": "Registration successful",
+            "username": created_user.username,
+            "role": created_user.role,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error creating user")
+
 
 @app.post("/login")
 def login_user(user: schemas.UserLogin, db: Session = Depends(get_db)):
@@ -74,34 +86,51 @@ def login_user(user: schemas.UserLogin, db: Session = Depends(get_db)):
     # Create a token
     try:
         access_token = jwt.encode(
-            {"sub": db_user.username, "role": db_user.role, "exp": datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)},
+            {
+                "sub": db_user.username,
+                "role": db_user.role,
+                "exp": datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+            },
             SECRET_KEY,
             algorithm=ALGORITHM,
         )
-        return {"token": access_token, "role": db_user.role, "username": db_user.username}
+        return {
+            "token": access_token,
+            "role": db_user.role,
+            "username": db_user.username,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error generating token")
 
-@app.post("/logout")
-def logout(token: str = Depends(oauth2_scheme)):
-    if token in token_blacklist:
-        raise HTTPException(status_code=400, detail="Token already invalidated")
-    token_blacklist.add(token)
-    return {"message": "Logged out successfully"}
 
-@app.get("/user-info")
-def get_user_info(token: str = Depends(oauth2_scheme)):
-    if token in token_blacklist:
-        raise HTTPException(status_code=401, detail="Token invalidated")
+@app.post("/logout")
+def logout_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
-        role = payload.get("role")
-        return {"username": username, "role": role}
+        if token in token_blacklist:
+            raise HTTPException(status_code=400, detail="Token already invalidated")
+        token_blacklist.add(token)
+        return {"message": f"User {username} logged out successfully"}
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+
+# @app.get("/user-info")
+# def get_user_info(token: str = Depends(oauth2_scheme)):
+#     if token in token_blacklist:
+#         raise HTTPException(status_code=401, detail="Token invalidated")
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         username = payload.get("sub")
+#         role = payload.get("role")
+#         return {"username": username, "role": role}
+#     except jwt.ExpiredSignatureError:
+#         raise HTTPException(status_code=401, detail="Token expired")
+#     except jwt.JWTError:
+#         raise HTTPException(status_code=401, detail="Invalid token")
 
 
 @app.get("/requests", response_model=List[schemas.RequestResponse])
@@ -114,24 +143,23 @@ def get_all_requests(db: Session = Depends(database.get_db)):
         return requests
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error fetching requests")
-    
+
 
 @app.post("/submit-request", response_model=schemas.RequestResponse)
-def submit_request(request: schemas.RequestCreate, db: Session = Depends(database.get_db)):
+def submit_request(
+    request: schemas.RequestCreate, db: Session = Depends(database.get_db)
+):
     """
     Endpoint to submit a new request with default priority based on type.
     """
     # Default priorities based on type
-    default_priorities = {
-        "water": 3,
-        "shelter": 2,
-        "food": 1,
-        "medical": 2
-    }
+    default_priorities = {"water": 3, "shelter": 2, "food": 1, "medical": 2}
 
     try:
         # Assign default priority based on type
-        priority = default_priorities.get(request.type, 1)  # Default to 1 if type is unknown
+        priority = default_priorities.get(
+            request.type, 1
+        )  # Default to 1 if type is unknown
 
         # Create a new request object
         new_request = models.Request(
@@ -140,9 +168,10 @@ def submit_request(request: schemas.RequestCreate, db: Session = Depends(databas
             priority=priority,
             latitude=request.latitude,
             longitude=request.longitude,
+            tckn=request.tckn,
             notes=request.notes,
             timestamp=datetime.now(),
-            status="pending"  # Default status
+            status="pending",  # Default status
         )
         db.add(new_request)
         db.commit()

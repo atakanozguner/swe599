@@ -12,6 +12,7 @@ const Navbar = ({ isLoggedIn, username, onLogout }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       localStorage.removeItem("token");
+      localStorage.removeItem("role");
       onLogout();
       navigate("/login");
     } catch (error) {
@@ -31,6 +32,9 @@ const Navbar = ({ isLoggedIn, username, onLogout }) => {
                 </li>
                 <li className="nav-item">
                   <Link className="nav-link" to="/register">Register</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/request-form">Request Form</Link>
                 </li>
               </>
             ) : (

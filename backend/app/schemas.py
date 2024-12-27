@@ -1,13 +1,17 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
+
 
 class UserCreate(BaseModel):
     username: str
     password: str
 
+
 class UserLogin(BaseModel):
     username: str
     password: str
+
 
 class RequestCreate(BaseModel):
     type: str
@@ -15,7 +19,9 @@ class RequestCreate(BaseModel):
     # priority: int
     latitude: float
     longitude: float
-    notes: str
+    tckn: Optional[str]
+    notes: Optional[str]
+
 
 class RequestResponse(BaseModel):
     id: int
@@ -24,7 +30,8 @@ class RequestResponse(BaseModel):
     priority: int
     latitude: float
     longitude: float
-    notes: str
+    tckn: Optional[str]
+    notes: Optional[str]
     timestamp: datetime
     status: str
 
