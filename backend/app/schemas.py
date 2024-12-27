@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 
 class UserCreate(BaseModel):
@@ -18,8 +19,8 @@ class RequestCreate(BaseModel):
     # priority: int
     latitude: float
     longitude: float
-    tckn: str
-    notes: str
+    tckn: Optional[str]
+    notes: Optional[str]
 
 
 class RequestResponse(BaseModel):
@@ -29,8 +30,8 @@ class RequestResponse(BaseModel):
     priority: int
     latitude: float
     longitude: float
-    tckn: str
-    notes: str
+    tckn: Optional[str]
+    notes: Optional[str]
     timestamp: datetime
     status: str
 
