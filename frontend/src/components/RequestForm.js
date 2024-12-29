@@ -27,6 +27,44 @@ const RequestForm = () => {
 
   const [subOptions, setSubOptions] = useState([]);
   const [sizeOptions, setSizeOptions] = useState([]);
+  const [specificItemOptions, setSpecificItemOptions] = useState([]);
+
+
+  const hygieneMapping = {
+    "Feminine Hygiene": ["Tampons", "Sanitary Pads", "Panty Liners"],
+    "General Hygiene": [
+      "Soap",
+      "Shampoo",
+      "Toothpaste",
+      "Toothbrush",
+      "Deodorant",
+      "Razor/Shaving Kit",
+      "Face Masks",
+    ],
+    "Cleaning Supplies": [
+      "Wet Wipes",
+      "Disinfectant Spray",
+      "Hand Sanitizer",
+      "Laundry Detergent",
+      "Towels",
+      "Tissue Paper",
+    ],
+    "Baby/Child Hygiene": [
+      "Baby Diapers",
+      "Baby Wipes",
+      "Baby Shampoo",
+      "Baby Lotion",
+      "Pacifiers",
+    ],
+    "Other Hygiene Items": [
+      "Nail Clippers",
+      "Cotton Buds",
+      "Comb/Brush",
+      "Disposable Gloves",
+      "Face Towels",
+    ],
+  };
+  
 
   // Update subtype options based on type
   useEffect(() => {
@@ -64,9 +102,15 @@ const RequestForm = () => {
             "Gloves",
           ]);
           break;
+        case "hygiene":
+          setSubOptions(Object.keys(hygieneMapping));
+          setSizeOptions([]);
+          setSpecificItemOptions([]);
+          break;
         default:
           setSubOptions([]);
           setSizeOptions([]);
+          
       }
     };
     updateSubOptions();
@@ -74,7 +118,7 @@ const RequestForm = () => {
 
   // Update size options based on subtype
   useEffect(() => {
-    if (["Coat", "T-Shirt", "Pants", "Hoodie", "Gloves"].includes(formData.subtype)) {
+    if (["Coat", "T-Shirt", "Pants","Jacket", "Hoodie", "Gloves"].includes(formData.subtype)) {
       setSizeOptions(["XS", "S", "M", "L", "XL", "XXL", "XXXL"]);
     } else if (["Boots", "Shoes", "Socks"].includes(formData.subtype)) {
       setSizeOptions(Array.from({ length: 16 }, (_, i) => (30 + i).toString()));
@@ -82,6 +126,16 @@ const RequestForm = () => {
       setSizeOptions([]);
     }
   }, [formData.subtype]);
+
+  useEffect(() => {
+    if (hygieneMapping[formData.subtype.split(" - ")[0]]) {
+      setSpecificItemOptions(hygieneMapping[formData.subtype.split(" - ")[0]]);
+    } else {
+      setSpecificItemOptions([]);
+    }
+  }, [formData.subtype]);
+  
+  
 
   // Custom hook to handle map clicks
   const LocationMarker = () => {
@@ -148,6 +202,7 @@ const RequestForm = () => {
             <option value="water">Water</option>
             <option value="medical">Medical</option>
             <option value="clothes">Clothes</option>
+            <option value="hygiene">Hygiene</option>
           </select>
         </div>
 
@@ -157,10 +212,15 @@ const RequestForm = () => {
             <label className="form-label">Subtype:</label>
             <select
               className="form-select"
-              value={formData.subtype}
-              onChange={(e) =>
-                setFormData({ ...formData, subtype: e.target.value, size: "" })
-              }
+              value={formData.subtype.split(" - ")[0]} // Always show the main subtype
+              onChange={(e) => {
+                setFormData({
+                  ...formData,
+                  subtype: e.target.value, // Set the main subtype
+                  size: "", // Reset size
+                });
+                setSpecificItemOptions([]); // Reset specific items for hygiene
+              }}
             >
               <option value="">-- Select --</option>
               {subOptions.map((option, index) => (
@@ -172,21 +232,55 @@ const RequestForm = () => {
           </div>
         )}
 
-        {/* Size Dropdown */}
-        {sizeOptions.length > 0 && (
+        {/* Size Dropdown for Clothes */}
+        {formData.type === "clothes" && sizeOptions.length > 0 && (
           <div className="mb-3">
             <label className="form-label">Size:</label>
             <select
               className="form-select"
               value={formData.size}
-              onChange={(e) =>
-                setFormData({ ...formData, size: e.target.value })
-              }
+              onChange={(e) => {
+                const selectedSize = e.target.value;
+                if (selectedSize) {
+                  setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    size: selectedSize,
+                    subtype: prevFormData.subtype.split(" ")[0], // Reset subtype to avoid concatenation issues
+                  }));
+                }
+              }}
             >
-              <option value="">-- Select --</option>
-              {sizeOptions.map((option, index) => (
-                <option key={index} value={option}>
-                  {option}
+              <option value="">Select Size</option>
+              {sizeOptions.map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Specific Item Dropdown for Hygiene */}
+        {formData.type === "hygiene" && specificItemOptions.length > 0 && (
+          <div className="mb-3">
+            <label className="form-label">Specific Item:</label>
+            <select
+              className="form-select"
+              value={formData.subtype.split(" - ")[1] || ""}
+              onChange={(e) => {
+                const selectedSpecificItem = e.target.value;
+                if (selectedSpecificItem) {
+                  setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    subtype: `${prevFormData.subtype.split(" - ")[0]} - ${selectedSpecificItem}`, // Concatenate specific item without overwriting
+                  }));
+                }
+              }}
+            >
+              <option value="">Select Specific Item</option>
+              {specificItemOptions.map((item) => (
+                <option key={item} value={item}>
+                  {item}
                 </option>
               ))}
             </select>

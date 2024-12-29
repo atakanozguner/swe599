@@ -8,17 +8,26 @@ const Navbar = ({ isLoggedIn, username, onLogout }) => {
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:8000/logout", null, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (token) {
+        await axios.post("http://localhost:8000/logout", null, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+      // Clear local storage and user state regardless of backend response
       localStorage.removeItem("token");
       localStorage.removeItem("role");
       onLogout();
       navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
+      // Even if the backend fails, clear the state
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      onLogout();
+      navigate("/login");
     }
   };
+  
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       <div className="container-fluid">

@@ -4,7 +4,7 @@ from app import models, schemas, crud, database
 from app.database import init_db, get_db
 from datetime import datetime, timedelta
 from app.tasks import celery_app
-from app.utils import find_closest_district
+from app.utils import find_closest_district, load_districts_from_json
 from jose import jwt, JWTError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -12,6 +12,7 @@ from fastapi.security import OAuth2PasswordBearer
 from typing import List
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
 @app.on_event("startup")
@@ -32,11 +33,21 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup():
-    init_db()
+    init_db()  # Ensure the database is initialized
+    db = next(get_db())  # Get a database session
+    try:
+        # Call the function to load districts from the JSON file
+        load_districts_from_json(
+            db, "app/static/districts.json"
+        )  # Update with the correct path
+        print("Districts successfully initialized!")
+    except Exception as e:
+        print(f"Error initializing districts: {e}")
+    finally:
+        db.close()  # Close the database session to avoid leaks
 
 
 # Serve static files
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 SECRET_KEY = "SECRETKEY123"
 ALGORITHM = "HS256"
@@ -108,15 +119,15 @@ def login_user(user: schemas.UserLogin, db: Session = Depends(get_db)):
 def logout_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if token in token_blacklist:
-            raise HTTPException(status_code=400, detail="Token already invalidated")
-        token_blacklist.add(token)
+        username = payload.get("sub", "unknown")
+        if token not in token_blacklist:
+            token_blacklist.add(token)
         return {"message": f"User {username} logged out successfully"}
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    except (jwt.ExpiredSignatureError, jwt.JWTError):
+        # Handle invalid or expired token gracefully
+        return {"message": "Token invalid or expired. Logout successful."}
+    except Exception as e:
+        return {"message": f"Unexpected error: {str(e)}. Logout successful."}
 
 
 # @app.get("/user-info")
