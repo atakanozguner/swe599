@@ -197,3 +197,25 @@ def submit_request(
         return new_request
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating request: {str(e)}")
+
+
+@app.get("/districts", response_model=List[schemas.DistrictResponse])
+def get_districts(db: Session = Depends(get_db)):
+    """
+    Fetch all districts from the database.
+    """
+    return db.query(models.District).all()
+
+
+@app.get(
+    "/districts/{district_id}/requests", response_model=List[schemas.RequestResponse]
+)
+def get_requests_by_district(district_id: int, db: Session = Depends(get_db)):
+    """
+    Fetch all requests for a specific district.
+    """
+    return (
+        db.query(models.Request)
+        .filter(models.Request.relatedDistrict == district_id)
+        .all()
+    )

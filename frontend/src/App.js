@@ -5,6 +5,9 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import RequestForm from "./components/RequestForm";
 import Dashboard from "./components/Dashboard";
+import Districts from "./components/Districts";
+import DistrictDetails from "./components/DistrictDetails";
+
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -49,6 +52,14 @@ const App = () => {
         <Route
           path="/dashboard"
           element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/districts"
+          element={isLoggedIn ? <Districts /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/districts/:districtId"
+          element={isLoggedIn ? <DistrictDetails /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/"

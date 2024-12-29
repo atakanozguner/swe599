@@ -1,6 +1,7 @@
 from geopy.distance import geodesic
 from sqlalchemy.orm import Session
 from app.models import District
+import json
 
 
 def find_closest_district(lat: float, lon: float, db: Session):
@@ -28,3 +29,22 @@ def find_closest_district(lat: float, lon: float, db: Session):
             closest_district = district
 
     return closest_district
+
+
+def load_districts_from_json(db, file_path):
+    with open(file_path, "r", encoding="utf-8") as file:
+        districts = json.load(file)
+        for district in districts:
+            # Check if the district already exists
+            existing_district = (
+                db.query(District).filter_by(name=district["name"]).first()
+            )
+            if not existing_district:
+                new_district = District(
+                    name=district["name"],
+                    latitude=district["latitude"],
+                    longitude=district["longitude"],
+                    inventory={},  # Initialize with an empty inventory
+                )
+                db.add(new_district)
+        db.commit()
