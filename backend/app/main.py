@@ -397,34 +397,43 @@ def transfer_inventory(
     if not target_district:
         raise HTTPException(status_code=404, detail="Target district not found")
 
-    # Validate and update source district's inventory
+    # Ensure both inventories are valid dictionaries
     source_inventory = source_district.inventory or {}
+    target_inventory = target_district.inventory or {}
+
     if not isinstance(source_inventory, dict):
         source_inventory = {}
+    if not isinstance(target_inventory, dict):
+        target_inventory = {}
 
+    # Normalize keys and validate the source inventory
     for item, quantity in transfer_data.items():
         if source_inventory.get(item, 0) < quantity:
             raise HTTPException(
                 status_code=400,
                 detail=f"Insufficient inventory in source district for {item}. Needed: {quantity}, Available: {source_inventory.get(item, 0)}",
             )
+
+    # Deduct from source inventory
+    for item, quantity in transfer_data.items():
         source_inventory[item] -= quantity
+        if source_inventory[item] <= 0:
+            del source_inventory[item]  # Remove item if quantity is zero or less
 
-    # Remove items with zero quantity
-    source_inventory = {k: v for k, v in source_inventory.items() if v > 0}
-
-    # Update target district's inventory
-    target_inventory = target_district.inventory or {}
-    if not isinstance(target_inventory, dict):
-        target_inventory = {}
-
+    # Add to target inventory
     for item, quantity in transfer_data.items():
         target_inventory[item] = target_inventory.get(item, 0) + quantity
 
-    # Save changes to both districts
-    source_district.inventory = source_inventory
-    target_district.inventory = target_inventory
-    db.commit()
+    # Update the database
+    try:
+        source_district.inventory = source_inventory
+        target_district.inventory = target_inventory
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    # Refresh instances to get updated inventories
     db.refresh(source_district)
     db.refresh(target_district)
 

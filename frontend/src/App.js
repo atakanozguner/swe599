@@ -14,29 +14,38 @@ import TransferInventory from "./components/TransferInventory";
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
+  const [role, setRole] = useState("");
+
 
   // Check login status on initial load
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
+    const savedRole = localStorage.getItem("role");
     const savedUsername = localStorage.getItem("username");
     if (token && savedUsername) {
       setIsLoggedIn(true);
       setUsername(savedUsername);
+      setRole(savedRole);
+
     }
   }, []);
 
-  const handleLogin = (user) => {
+  const handleLogin = (user, userRole) => {
     setIsLoggedIn(true);
     setUsername(user);
+    setRole(userRole);
     localStorage.setItem("username", user); // Save username to localStorage
+    localStorage.setItem("role", userRole); // Save role to localStorage
+
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUsername("");
+    setRole("");
     localStorage.removeItem("token");
     localStorage.removeItem("username");
+    localStorage.removeItem("role");
   };
 
   const isAdmin = () => role === "admin";

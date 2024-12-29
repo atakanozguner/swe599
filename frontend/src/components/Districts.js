@@ -36,6 +36,14 @@ const Districts = () => {
 
   return (
     <div className="container mt-4">
+      <div className="d-flex justify-content-end mb-3">
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate('/transfer-inventory')}
+        >
+          Transfer Inventory Page
+        </button>
+      </div>
       <h1 className="text-center mb-4">Districts</h1>
       {error && <div className="alert alert-danger">{error}</div>}
       {districts.length === 0 ? (
