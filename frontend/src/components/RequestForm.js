@@ -22,23 +22,11 @@ const RequestForm = () => {
     longitude: 28.9784, // Default longitude for Istanbul
     tckn: "",
     notes: "",
+    size: "",
   });
 
   const [subOptions, setSubOptions] = useState([]);
-  const [medicineOptions, setMedicineOptions] = useState([]);
-
-  // Fetch medicines.json from the backend
-  useEffect(() => {
-    const fetchMedicines = async () => {
-      try {
-        const response = await axios.get("http://localhost:8000/static/medicines.json");
-        setMedicineOptions(response.data.medicines);
-      } catch (error) {
-        console.error("Error fetching medicines:", error);
-      }
-    };
-    fetchMedicines();
-  }, []);
+  const [sizeOptions, setSizeOptions] = useState([]);
 
   // Update subtype options based on type
   useEffect(() => {
@@ -46,22 +34,54 @@ const RequestForm = () => {
       switch (formData.type) {
         case "food":
           setSubOptions(["Warm Food"]);
+          setSizeOptions([]);
           break;
         case "water":
           setSubOptions(["Water"]);
+          setSizeOptions([]);
           break;
         case "shelter":
           setSubOptions(["Tent", "Container", "Temporary Housing"]);
+          setSizeOptions([]);
           break;
         case "medical":
-          setSubOptions(medicineOptions);
+          axios
+            .get("http://localhost:8000/static/medicines.json")
+            .then((response) => setSubOptions(response.data.medicines))
+            .catch((error) => console.error("Error fetching medicines:", error));
+          setSizeOptions([]);
+          break;
+        case "clothes":
+          setSubOptions([
+            "Coat",
+            "Jacket",
+            "T-Shirt",
+            "Pants",
+            "Hoodie",
+            "Boots",
+            "Shoes",
+            "Socks",
+            "Gloves",
+          ]);
           break;
         default:
           setSubOptions([]);
+          setSizeOptions([]);
       }
     };
     updateSubOptions();
-  }, [formData.type, medicineOptions]);
+  }, [formData.type]);
+
+  // Update size options based on subtype
+  useEffect(() => {
+    if (["Coat", "T-Shirt", "Pants", "Hoodie", "Gloves"].includes(formData.subtype)) {
+      setSizeOptions(["XS", "S", "M", "L", "XL", "XXL", "XXXL"]);
+    } else if (["Boots", "Shoes", "Socks"].includes(formData.subtype)) {
+      setSizeOptions(Array.from({ length: 16 }, (_, i) => (30 + i).toString()));
+    } else {
+      setSizeOptions([]);
+    }
+  }, [formData.subtype]);
 
   // Custom hook to handle map clicks
   const LocationMarker = () => {
@@ -81,6 +101,7 @@ const RequestForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const tcknRegex = /^[0-9]{11}$/;
     if (formData.tckn && !tcknRegex.test(formData.tckn)) {
       alert("TCKN must be 11 digits long and contain only numbers.");
@@ -89,12 +110,15 @@ const RequestForm = () => {
 
     const payload = {
       type: formData.type,
-      subtype: formData.subtype,
+      subtype: formData.size
+        ? `${formData.subtype} ${formData.size}`
+        : formData.subtype,
       latitude: formData.latitude,
       longitude: formData.longitude,
       tckn: formData.tckn,
       notes: formData.notes,
     };
+
     try {
       await axios.post("http://localhost:8000/submit-request", payload);
       alert("Request submitted successfully!");
@@ -115,7 +139,7 @@ const RequestForm = () => {
             className="form-select"
             value={formData.type}
             onChange={(e) =>
-              setFormData({ ...formData, type: e.target.value, subtype: "" })
+              setFormData({ ...formData, type: e.target.value, subtype: "", size: "" })
             }
           >
             <option value="">-- Select --</option>
@@ -123,6 +147,7 @@ const RequestForm = () => {
             <option value="food">Food</option>
             <option value="water">Water</option>
             <option value="medical">Medical</option>
+            <option value="clothes">Clothes</option>
           </select>
         </div>
 
@@ -134,11 +159,32 @@ const RequestForm = () => {
               className="form-select"
               value={formData.subtype}
               onChange={(e) =>
-                setFormData({ ...formData, subtype: e.target.value })
+                setFormData({ ...formData, subtype: e.target.value, size: "" })
               }
             >
               <option value="">-- Select --</option>
               {subOptions.map((option, index) => (
+                <option key={index} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Size Dropdown */}
+        {sizeOptions.length > 0 && (
+          <div className="mb-3">
+            <label className="form-label">Size:</label>
+            <select
+              className="form-select"
+              value={formData.size}
+              onChange={(e) =>
+                setFormData({ ...formData, size: e.target.value })
+              }
+            >
+              <option value="">-- Select --</option>
+              {sizeOptions.map((option, index) => (
                 <option key={index} value={option}>
                   {option}
                 </option>
