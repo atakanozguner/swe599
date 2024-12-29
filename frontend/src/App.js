@@ -48,7 +48,7 @@ const App = () => {
     localStorage.removeItem("role");
   };
 
-  const isAdmin = () => role === "admin";
+  const isAdmin = () => role === "administrator";
 
   return (
     <Router>
