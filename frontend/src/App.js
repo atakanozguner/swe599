@@ -48,7 +48,6 @@ const App = () => {
     localStorage.removeItem("role");
   };
 
-  const isAdmin = () => role === "admin";
 
   return (
     <Router>
@@ -77,11 +76,15 @@ const App = () => {
         />
         <Route
           path="/districts/:districtId/inventory"
-          element={isLoggedIn && isAdmin() ? <InventoryManager /> : <Navigate to="/login" replace />}
+          element={isLoggedIn && role === "administrator" ? <InventoryManager /> : <Navigate to="/login" replace />}
+          onEnter={() => console.log("Role during route check:", role)} // Debugging log
+
         />
         <Route
           path="/transfer-inventory"
-          element={isLoggedIn && isAdmin() ? <TransferInventory /> : <Navigate to="/login" replace />}
+          element={isLoggedIn && role === "administrator" ? <TransferInventory /> : <Navigate to="/login" replace />}
+          onEnter={() => console.log("Role during route check:", role)} // Debugging log
+
         />
         <Route
           path="/"
