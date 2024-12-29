@@ -38,6 +38,7 @@ const Dashboard = () => {
                 <th>Type</th>
                 <th>Subtype</th>
                 <th>Priority</th>
+                <th>TCKN</th>
                 <th>Location</th>
                 <th>Notes</th>
                 <th>Status</th>
@@ -51,6 +52,7 @@ const Dashboard = () => {
                   <td>{req.type}</td>
                   <td>{req.subtype}</td>
                   <td>{req.priority}</td>
+                  <td>{req.tckn}</td>
                   <td>
                     <a
                       href={`https://www.google.com/maps?q=${req.latitude},${req.longitude}`}
@@ -87,6 +89,8 @@ const Dashboard = () => {
                   <strong>{req.type}</strong> - {req.subtype}
                   <br />
                   Priority: {req.priority}
+                  <br />
+                  TCKN: {req.tckn}
                   <br />
                   Notes: {req.notes}
                   <br />

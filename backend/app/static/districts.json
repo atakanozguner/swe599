@@ -1,0 +1,102 @@
+[
+    {
+        "name": "Fatih,Istanbul",
+        "latitude": 41.0165,
+        "longitude": 28.9497
+    },
+    {
+        "name": "Kadikoy,Istanbul",
+        "latitude": 40.981,
+        "longitude": 29.0888
+    },
+    {
+        "name": "Adapazari,Sakarya",
+        "latitude": 40.7794,
+        "longitude": 30.4034
+    },
+    {
+        "name": "Serdivan,Sakarya",
+        "latitude": 40.7785,
+        "longitude": 30.3569
+    },
+    {
+        "name": "Izmit,Kocaeli",
+        "latitude": 40.7655,
+        "longitude": 29.9409
+    },
+    {
+        "name": "Gebze,Kocaeli",
+        "latitude": 40.802,
+        "longitude": 29.4307
+    },
+    {
+        "name": "Osmangazi,Bursa",
+        "latitude": 40.1826,
+        "longitude": 29.0674
+    },
+    {
+        "name": "Nilufer,Bursa",
+        "latitude": 40.2185,
+        "longitude": 28.971
+    },
+    {
+        "name": "Yalova,Yalova",
+        "latitude": 40.6569,
+        "longitude": 29.2758
+    },
+    {
+        "name": "Cinarcik,Yalova",
+        "latitude": 40.6311,
+        "longitude": 29.1299
+    },
+    {
+        "name": "Merkez,Canakkale",
+        "latitude": 40.1553,
+        "longitude": 26.4142
+    },
+    {
+        "name": "Ezine,Canakkale",
+        "latitude": 39.7853,
+        "longitude": 26.3418
+    },
+    {
+        "name": "Suleymanpasa,Tekirdag",
+        "latitude": 40.978,
+        "longitude": 27.5111
+    },
+    {
+        "name": "Corlu,Tekirdag",
+        "latitude": 41.1593,
+        "longitude": 27.7971
+    },
+    {
+        "name": "Merkez,Kirklareli",
+        "latitude": 41.7333,
+        "longitude": 27.2167
+    },
+    {
+        "name": "Luleburgaz,Kirklareli",
+        "latitude": 41.406,
+        "longitude": 27.3557
+    },
+    {
+        "name": "Karesi,Balikesir",
+        "latitude": 39.6503,
+        "longitude": 27.8875
+    },
+    {
+        "name": "Bandirma,Balikesir",
+        "latitude": 40.3524,
+        "longitude": 27.9784
+    },
+    {
+        "name": "Merkez,Bilecik",
+        "latitude": 40.142,
+        "longitude": 29.9787
+    },
+    {
+        "name": "Bozuyuk,Bilecik",
+        "latitude": 39.9101,
+        "longitude": 30.036
+    }
+]
