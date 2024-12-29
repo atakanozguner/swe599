@@ -166,7 +166,7 @@ const handleUpdateInventory = async (e) => {
 
   // Update size options for clothes
   useEffect(() => {
-    if (["Coat", "T-Shirt", "Pants", "Hoodie", "Gloves"].includes(formData.subtype)) {
+    if (["Coat", "T-Shirt", "Pants", "Hoodie", "Jacket", "Gloves"].includes(formData.subtype)) {
       setSizeOptions(["XS", "S", "M", "L", "XL", "XXL", "XXXL"]);
     } else if (["Boots", "Shoes", "Socks"].includes(formData.subtype)) {
       setSizeOptions(Array.from({ length: 16 }, (_, i) => (30 + i).toString()));
@@ -177,8 +177,8 @@ const handleUpdateInventory = async (e) => {
 
   // Update specific item options for hygiene
   useEffect(() => {
-    if (hygieneMapping[formData.subtype.split(" - ")[0]]) {
-      setSpecificItemOptions(hygieneMapping[formData.subtype.split(" - ")[0]]);
+    if (hygieneMapping[formData.subtype]) {
+      setSpecificItemOptions(hygieneMapping[formData.subtype]);
     } else {
       setSpecificItemOptions([]);
     }
@@ -279,22 +279,22 @@ const handleUpdateInventory = async (e) => {
             <div className="mb-3">
                 <label className="form-label">Specific Item:</label>
                 <select
-                    className="form-select"
-                    value={formData.subtype.split(" - ")[1] || ""}
-                    onChange={(e) => {
-                        const selectedSpecificItem = e.target.value;
-                        setFormData((prevFormData) => ({
-                            ...prevFormData,
-                            subtype: `${prevFormData.subtype.split(" - ")[0]} - ${selectedSpecificItem}`,
-                        }));
-                    }}
+                className="form-select"
+                value={formData.subtype}
+                onChange={(e) => {
+                    const selectedSpecificItem = e.target.value;
+                    setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    subtype: selectedSpecificItem,
+                    }));
+                }}
                 >
-                    <option value="">-- Select --</option>
-                    {specificItemOptions.map((item) => (
-                        <option key={item} value={item}>
-                            {item}
-                        </option>
-                    ))}
+                <option value="">-- Select --</option>
+                {specificItemOptions.map((item) => (
+                    <option key={item} value={item}>
+                    {item}
+                    </option>
+                ))}
                 </select>
             </div>
         )}
