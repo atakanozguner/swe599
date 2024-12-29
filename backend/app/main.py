@@ -202,9 +202,25 @@ def submit_request(
 @app.get("/districts", response_model=List[schemas.DistrictResponse])
 def get_districts(db: Session = Depends(get_db)):
     """
-    Fetch all districts from the database.
+    Fetch all districts and include the number of requests for each.
     """
-    return db.query(models.District).all()
+    districts = db.query(models.District).all()
+    result = []
+    for district in districts:
+        request_count = (
+            db.query(models.Request).filter_by(relatedDistrict=district.id).count()
+        )
+        result.append(
+            {
+                "id": district.id,
+                "name": district.name,
+                "latitude": district.latitude,
+                "longitude": district.longitude,
+                "inventory": district.inventory,
+                "request_count": request_count,  # Include request count
+            }
+        )
+    return result
 
 
 @app.get(
@@ -219,3 +235,33 @@ def get_requests_by_district(district_id: int, db: Session = Depends(get_db)):
         .filter(models.Request.relatedDistrict == district_id)
         .all()
     )
+
+
+@app.get("/districts/{district_id}", response_model=schemas.DistrictResponse)
+def get_district_by_id(district_id: int, db: Session = Depends(get_db)):
+    """
+    Fetch details of a specific district by ID.
+    """
+    # Fetch the district by ID
+    district = (
+        db.query(models.District).filter(models.District.id == district_id).first()
+    )
+    if not district:
+        raise HTTPException(status_code=404, detail="District not found")
+
+    # Count the number of requests related to this district
+    request_count = (
+        db.query(models.Request)
+        .filter(models.Request.relatedDistrict == district.id)
+        .count()
+    )
+
+    # Return the district details along with the request count
+    return {
+        "id": district.id,
+        "name": district.name,
+        "latitude": district.latitude,
+        "longitude": district.longitude,
+        "inventory": district.inventory,
+        "request_count": request_count,
+    }

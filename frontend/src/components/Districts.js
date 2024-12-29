@@ -26,6 +26,14 @@ const Districts = () => {
     navigate(`/districts/${districtId}`);
   };
 
+  const getColorForCount = (count) => {
+    const maxCount = 20; // Define the maximum count for full red
+    const ratio = Math.min(count / maxCount, 1); // Normalize between 0 and 1
+    const red = Math.floor(255 * ratio); // Increase red intensity with count
+    const blue = Math.floor(255 * (1 - ratio)); // Decrease blue intensity with count
+    return `rgb(${red}, 0, ${blue})`; // Return RGB color
+  };
+
   return (
     <div className="container mt-4">
       <h1 className="text-center mb-4">Districts</h1>
@@ -37,36 +45,38 @@ const Districts = () => {
           {/* Districts List */}
           <table className="table table-striped table-hover">
             <thead className="table-dark">
-              <tr>
+                <tr>
                 <th>Name</th>
                 <th>Latitude</th>
                 <th>Longitude</th>
-                <th>Inventory</th>
-              </tr>
+                <th>Requests</th> {/* Updated Header */}
+                </tr>
             </thead>
             <tbody>
-              {districts.map((district) => (
+                {districts.map((district) => (
                 <tr
-                  key={district.id}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => handleDistrictClick(district.id)}
+                    key={district.id}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handleDistrictClick(district.id)}
                 >
-                  <td>{district.name}</td>
-                  <td>{district.latitude}</td>
-                  <td>{district.longitude}</td>
-                  <td>
-                    {district.inventory && Object.keys(district.inventory).length > 0
-                      ? Object.entries(district.inventory).map(([item, count]) => (
-                          <div key={item}>
-                            {item}: {count}
-                          </div>
-                        ))
-                      : "No inventory available"}
-                  </td>
+                    <td>{district.name}</td>
+                    <td>{district.latitude}</td>
+                    <td>{district.longitude}</td>
+                    <td>
+                        <span
+                        style={{
+                            fontWeight: "bold",
+                            color: getColorForCount(district.request_count || 0),
+                        }}
+                        >
+                        {district.request_count || 0}
+                        </span>
+                    </td>                
                 </tr>
-              ))}
+                ))}
             </tbody>
           </table>
+
 
           {/* Map Display */}
           <MapContainer
@@ -82,9 +92,6 @@ const Districts = () => {
               <Marker
                 key={district.id}
                 position={[district.latitude, district.longitude]}
-                eventHandlers={{
-                  click: () => handleDistrictClick(district.id),
-                }}
               >
                 <Popup>
                   <strong>{district.name}</strong>
@@ -92,6 +99,8 @@ const Districts = () => {
                   Latitude: {district.latitude}
                   <br />
                   Longitude: {district.longitude}
+                  <br />
+                  Requests: {district.request_count}
                   <br />
                   <button
                     className="btn btn-primary btn-sm mt-2"
