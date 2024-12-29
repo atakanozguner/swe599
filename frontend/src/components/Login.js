@@ -15,7 +15,7 @@ const Login = ({ onLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8000/login", formData);
+      const response = await axios.post("http://44.203.160.46:8000/login", formData);
       const { token, role, username } = response.data;
 
       // Save the token and role to localStorage

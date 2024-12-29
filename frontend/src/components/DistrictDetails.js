@@ -15,12 +15,12 @@ const DistrictDetails = () => {
   const fetchDistrictData = async () => {
     try {
       const districtResponse = await axios.get(
-        `http://localhost:8000/districts/${districtId}`
+        `http://44.203.160.46:8000/districts/${districtId}`
       );
       setDistrictDetails(districtResponse.data);
 
       const requestsResponse = await axios.get(
-        `http://localhost:8000/districts/${districtId}/requests`
+        `http://44.203.160.46:8000/districts/${districtId}/requests`
       );
       setRequests(requestsResponse.data);
     } catch (error) {
@@ -32,7 +32,7 @@ const DistrictDetails = () => {
   const fetchInventory = async () => {
     try {
       const inventoryResponse = await axios.get(
-        `http://localhost:8000/districts/${districtId}`
+        `http://44.203.160.46:8000/districts/${districtId}`
       );
       setInventory(inventoryResponse.data.inventory || {});
     } catch (error) {
@@ -44,7 +44,7 @@ const DistrictDetails = () => {
   const resolveRequest = async (requestId, subtype, quantity) => {
     try {
       const response = await axios.post(
-        `http://localhost:8000/requests/${requestId}/resolve`
+        `http://44.203.160.46:8000/requests/${requestId}/resolve`
       );
       alert(response.data.message);
       fetchDistrictData(); // Refresh requests and district details

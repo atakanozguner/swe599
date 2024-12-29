@@ -9,7 +9,7 @@ const Navbar = ({ isLoggedIn, username, onLogout }) => {
     try {
       const token = localStorage.getItem("token");
       if (token) {
-        await axios.post("http://localhost:8000/logout", null, {
+        await axios.post("http://44.203.160.46:8000/logout", null, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }

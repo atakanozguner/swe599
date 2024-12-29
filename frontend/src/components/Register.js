@@ -14,7 +14,7 @@ const Register = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        `http://localhost:8000/register?key=${formData.key}`,
+        `http://44.203.160.46:8000/register?key=${formData.key}`,
         {
           username: formData.username,
           password: formData.password,

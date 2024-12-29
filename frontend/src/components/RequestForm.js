@@ -85,7 +85,7 @@ const RequestForm = () => {
           break;
         case "medical":
           axios
-            .get("http://localhost:8000/static/medicines.json")
+            .get("http://44.203.160.46:8000/static/medicines.json")
             .then((response) => setSubOptions(response.data.medicines))
             .catch((error) => console.error("Error fetching medicines:", error));
           setSizeOptions([]);
@@ -176,7 +176,7 @@ const RequestForm = () => {
     };
 
     try {
-      await axios.post("http://localhost:8000/submit-request", payload);
+      await axios.post("http://44.203.160.46:8000/submit-request", payload);
       alert("Request submitted successfully!");
     } catch (error) {
       console.error("Error submitting request:", error);

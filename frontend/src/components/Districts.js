@@ -12,7 +12,7 @@ const Districts = () => {
   useEffect(() => {
     const fetchDistricts = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/districts");
+        const response = await axios.get("http://44.203.160.46:8000/districts");
         setDistricts(response.data);
       } catch (err) {
         console.error("Error fetching districts:", err);

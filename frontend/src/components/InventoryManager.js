@@ -57,7 +57,7 @@ const InventoryManager = () => {
     const fetchInventory = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/districts/${districtId}`
+          `http://44.203.160.46:8000/districts/${districtId}`
         );
         setInventory(response.data.inventory);
       } catch (err) {
@@ -89,7 +89,7 @@ const handleUpdateInventory = async (e) => {
 
     try {
         const response = await axios.post(
-            `http://localhost:8000/districts/${districtId}/inventory`,
+            `http://44.203.160.46:8000/districts/${districtId}/inventory`,
             payload,
             {
                 headers: {
@@ -129,7 +129,7 @@ const handleUpdateInventory = async (e) => {
         case "medical":
           try {
             const response = await axios.get(
-              "http://localhost:8000/static/medicines.json"
+              "http://44.203.160.46:8000/static/medicines.json"
             );
             setSubOptions(response.data.medicines);
           } catch (error) {

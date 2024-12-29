@@ -15,7 +15,7 @@ const TransferInventory = () => {
   useEffect(() => {
     const fetchDistricts = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/districts");
+        const response = await axios.get("http://44.203.160.46:8000/districts");
         setDistricts(response.data);
       } catch (error) {
         console.error("Error fetching districts:", error);
@@ -30,7 +30,7 @@ const TransferInventory = () => {
       const fetchFromInventory = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:8000/districts/${fromDistrict}`
+            `http://44.203.160.46:8000/districts/${fromDistrict}`
           );
           setFromInventory(response.data.inventory);
         } catch (error) {
@@ -50,7 +50,7 @@ const TransferInventory = () => {
       const fetchToInventory = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:8000/districts/${toDistrict}`
+            `http://44.203.160.46:8000/districts/${toDistrict}`
           );
           setToInventory(response.data.inventory);
         } catch (error) {
@@ -79,7 +79,7 @@ const handleTransfer = async () => {
             [inventoryItem]: parseInt(quantity, 10) // Ensure quantity is an integer
         };
         const response = await axios.post(
-            `http://localhost:8000/districts/${fromDistrict}/transfer/${toDistrict}`,
+            `http://44.203.160.46:8000/districts/${fromDistrict}/transfer/${toDistrict}`,
             payload,
             {
                 headers: {
