@@ -23,8 +23,8 @@ const Login = ({ onLogin }) => {
       localStorage.setItem("role", role);
 
       // Call onLogin to update global state
-      onLogin(username);
-
+      onLogin(username, role);
+      
       setMessage("Login successful!");
       setIsError(false);
 
