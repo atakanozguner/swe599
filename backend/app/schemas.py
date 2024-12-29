@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict
 
 
 class UserCreate(BaseModel):
@@ -34,6 +34,25 @@ class RequestResponse(BaseModel):
     notes: Optional[str]
     timestamp: datetime
     status: str
+    relatedDistrict: Optional[int] = None
+
+    class Config:
+        orm_mode = True
+
+
+class DistrictCreate(BaseModel):
+    name: str
+    latitude: float
+    longitude: float
+    inventory: Optional[Dict[str, int]] = {}
+
+
+class DistrictResponse(BaseModel):
+    id: int
+    name: str
+    latitude: float
+    longitude: float
+    inventory: Dict[str, int]
 
     class Config:
         orm_mode = True

@@ -4,6 +4,7 @@ from app import models, schemas, crud, database
 from app.database import init_db, get_db
 from datetime import datetime, timedelta
 from app.tasks import celery_app
+from app.utils import find_closest_district
 from jose import jwt, JWTError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -161,6 +162,10 @@ def submit_request(
             request.type, 1
         )  # Default to 1 if type is unknown
 
+        closest_district = find_closest_district(
+            request.latitude, request.longitude, db
+        )
+
         # Create a new request object
         new_request = models.Request(
             type=request.type,
@@ -172,6 +177,7 @@ def submit_request(
             notes=request.notes,
             timestamp=datetime.now(),
             status="pending",  # Default status
+            relatedDistrict=closest_district.id if closest_district else None,
         )
         db.add(new_request)
         db.commit()
