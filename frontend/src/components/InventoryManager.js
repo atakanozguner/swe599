@@ -68,37 +68,47 @@ const InventoryManager = () => {
     fetchInventory();
   }, [districtId]);
 
-  const handleUpdateInventory = async (e) => {
+const handleUpdateInventory = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
     if (!formData.type || !formData.subtype || formData.quantity === 0) {
-      setError("Please provide valid type, subtype, and quantity.");
-      return;
+        setError("Please provide valid type, subtype, and quantity.");
+        return;
     }
 
     // Construct the payload key
     const inventoryKey = formData.size
-      ? `${formData.type} - ${formData.subtype} ${formData.size}`
-      : `${formData.type} - ${formData.subtype}`;
+        ? `${formData.type} - ${formData.subtype} ${formData.size}`
+        : `${formData.type} - ${formData.subtype}`;
 
     const payload = { [inventoryKey]: formData.quantity }; // Correctly structured payload
 
-    try {
-      const response = await axios.post(
-        `http://localhost:8000/districts/${districtId}/inventory`,
-        payload
-      );
+    console.log("Payload to be sent:", payload); // Log the payload
 
-      setSuccess("Inventory updated successfully!");
-      setInventory(response.data.inventory); // Update local inventory with the server's response
-      setFormData({ type: "", subtype: "", size: "", quantity: 0 }); // Reset form
+    try {
+        const response = await axios.post(
+            `http://localhost:8000/districts/${districtId}/inventory`,
+            payload,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        console.log("Payload sent:", payload);
+        console.log("Response from server:", response.data);
+
+        setSuccess("Inventory updated successfully!");
+        setInventory(response.data.inventory); // Update local inventory with the server's response
+        setFormData({ type: "", subtype: "", size: "", quantity: 0 }); // Reset form
     } catch (err) {
-      console.error("Error updating inventory:", err);
-      setError("Failed to update inventory. Please try again.");
+        console.error("Error updating inventory:", err);
+        setError("Failed to update inventory. Please try again.");
     }
-  };
+};
 
   // Update subtype options based on type
   useEffect(() => {

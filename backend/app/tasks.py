@@ -13,9 +13,11 @@ celery_app.conf.update(
 
 # Priority adjustment constants
 PRIORITY_INCREASE = {
-    "water": lambda hours: 2 ** hours,  # Exponential
-    "food": lambda hours: 1 * hours,   # Linear
-    "shelter": lambda hours: 0.5 * hours,  # Slower linear
+    "water": lambda hours: 2**hours,  # Exponential
+    "food": lambda hours: 1.5 * hours,  # Slower exponential
+    "shelter": lambda hours: 1 * hours,  # Linear
+    "clothes": lambda hours: 0.5 * hours,  # Slower linear
+    "hygiene": lambda hours: 0.5 * hours,  # Slower linear
 }
 
 # Celery beat schedule for periodic task execution
@@ -26,6 +28,7 @@ celery_app.conf.beat_schedule = {
     }
 }
 
+
 @celery_app.task
 def adjust_priorities():
     """Adjust the priority of pending requests based on time passed."""
@@ -35,7 +38,9 @@ def adjust_priorities():
         requests = db.query(Request).filter(Request.status == "pending").all()
 
         for request in requests:
-            time_passed = (datetime.utcnow() - request.timestamp).total_seconds() // 3600  # Time in hours
+            time_passed = (
+                datetime.utcnow() - request.timestamp
+            ).total_seconds() // 3600  # Time in hours
             if request.type in PRIORITY_INCREASE:
                 increase = PRIORITY_INCREASE[request.type](time_passed)
                 request.priority += int(increase)

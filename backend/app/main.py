@@ -276,42 +276,51 @@ def update_district_inventory(
 ):
     """
     Update the inventory of a specific district.
-    Allows adding and removing inventory items.
+    Allows adding and removing inventory items incrementally.
     """
     district = db.query(models.District).filter_by(id=district_id).first()
     if not district:
         raise HTTPException(status_code=404, detail="District not found")
 
-    # Ensure current inventory is a valid dictionary
+    # Ensure current inventory is fetched from the database every time
+    db.refresh(district)  # Ensure the district data is up-to-date
     current_inventory: Dict[str, int] = district.inventory or {}
 
-    # Safely handle Column object conversion to a dictionary
     if not isinstance(current_inventory, dict):
         current_inventory = {}
 
-    # Update inventory
-    for item, quantity in inventory_update.items():
-        current_quantity = current_inventory.get(item, 0)
+    # Normalize item names to lowercase
+    normalized_inventory_update = {
+        item.lower(): quantity for item, quantity in inventory_update.items()
+    }
+    normalized_current_inventory = {
+        item.lower(): quantity for item, quantity in current_inventory.items()
+    }
+
+    # Update inventory incrementally
+    for item, quantity in normalized_inventory_update.items():
+        current_quantity = normalized_current_inventory.get(item, 0)
         updated_quantity = current_quantity + quantity
         if updated_quantity < 0:
             raise HTTPException(
                 status_code=400,
                 detail=f"Cannot reduce {item} below 0. Current: {current_quantity}, Attempted: {quantity}",
             )
-        current_inventory[item] = updated_quantity
+        normalized_current_inventory[item] = updated_quantity
 
     # Remove items with zero quantity
-    current_inventory = {
-        item: qty for item, qty in current_inventory.items() if qty > 0
+    normalized_current_inventory = {
+        item: qty for item, qty in normalized_current_inventory.items() if qty > 0
     }
 
     # Assign updated inventory back to the district
-    district.inventory = current_inventory
+    district.inventory = normalized_current_inventory
     db.commit()
     db.refresh(district)
+
     return {
         "message": "Inventory updated successfully",
-        "inventory": district.inventory,
+        "inventory": normalized_current_inventory,
     }
 
 
