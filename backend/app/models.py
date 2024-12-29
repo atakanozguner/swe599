@@ -39,5 +39,5 @@ class District(Base):
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
     inventory = Column(
-        JSONB, nullable=False, default={}
+        JSONB, nullable=True, default={}
     )  # Example: {"tents": 10, "water": 50}

@@ -7,6 +7,7 @@ import RequestForm from "./components/RequestForm";
 import Dashboard from "./components/Dashboard";
 import Districts from "./components/Districts";
 import DistrictDetails from "./components/DistrictDetails";
+import InventoryManager from "./components/InventoryManager";
 
 
 const App = () => {
@@ -60,6 +61,10 @@ const App = () => {
         <Route
           path="/districts/:districtId"
           element={isLoggedIn ? <DistrictDetails /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/districts/:districtId/inventory"
+          element={isLoggedIn ? <InventoryManager /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/"

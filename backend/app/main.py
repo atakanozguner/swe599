@@ -9,7 +9,7 @@ from jose import jwt, JWTError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import OAuth2PasswordBearer
-from typing import List
+from typing import List, Dict, Optional, Any
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -184,7 +184,7 @@ def submit_request(
             priority=priority,
             latitude=request.latitude,
             longitude=request.longitude,
-            quantity=request.quantity,
+            quantity=request.quantity if request.quantity is not None else 1,
             tckn=request.tckn,
             notes=request.notes,
             timestamp=datetime.now(),
@@ -265,4 +265,100 @@ def get_district_by_id(district_id: int, db: Session = Depends(get_db)):
         "longitude": district.longitude,
         "inventory": district.inventory,
         "request_count": request_count,
+    }
+
+
+@app.post("/districts/{district_id}/inventory")
+def update_district_inventory(
+    district_id: int,
+    inventory_update: Dict[str, int],
+    db: Session = Depends(get_db),
+):
+    """
+    Update the inventory of a specific district.
+    Allows adding and removing inventory items.
+    """
+    district = db.query(models.District).filter_by(id=district_id).first()
+    if not district:
+        raise HTTPException(status_code=404, detail="District not found")
+
+    # Ensure current inventory is a valid dictionary
+    current_inventory: Dict[str, int] = district.inventory or {}
+
+    # Safely handle Column object conversion to a dictionary
+    if not isinstance(current_inventory, dict):
+        current_inventory = {}
+
+    # Update inventory
+    for item, quantity in inventory_update.items():
+        current_quantity = current_inventory.get(item, 0)
+        updated_quantity = current_quantity + quantity
+        if updated_quantity < 0:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot reduce {item} below 0. Current: {current_quantity}, Attempted: {quantity}",
+            )
+        current_inventory[item] = updated_quantity
+
+    # Remove items with zero quantity
+    current_inventory = {
+        item: qty for item, qty in current_inventory.items() if qty > 0
+    }
+
+    # Assign updated inventory back to the district
+    district.inventory = current_inventory
+    db.commit()
+    db.refresh(district)
+    return {
+        "message": "Inventory updated successfully",
+        "inventory": district.inventory,
+    }
+
+
+@app.post("/districts/{district_id}/resolve-request/{request_id}")
+def resolve_request(district_id: int, request_id: int, db: Session = Depends(get_db)):
+    """
+    Resolve a specific request by deducting quantities from district inventory.
+    """
+    district = db.query(models.District).filter_by(id=district_id).first()
+    if not district:
+        raise HTTPException(status_code=404, detail="District not found")
+
+    request = db.query(models.Request).filter_by(id=request_id).first()
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    if request.status == "resolved":
+        raise HTTPException(status_code=400, detail="Request already resolved")
+
+    # Get district inventory
+    current_inventory: Dict[str, int] = district.inventory or {}
+    if not isinstance(current_inventory, dict):
+        current_inventory = {}
+
+    # Deduct request quantities from inventory
+    item = request.subtype  # Assuming subtype matches inventory item name
+    required_quantity = request.quantity
+    if current_inventory.get(item, 0) < required_quantity:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Not enough {item} in inventory. Required: {required_quantity}, Available: {current_inventory.get(item, 0)}",
+        )
+    current_inventory[item] -= required_quantity
+
+    # Remove item if quantity drops to zero
+    if current_inventory[item] == 0:
+        del current_inventory[item]
+
+    # Update inventory and request status
+    district.inventory = current_inventory
+    request.status = "resolved"
+    db.commit()
+    db.refresh(district)
+    db.refresh(request)
+
+    return {
+        "message": "Request resolved successfully",
+        "inventory": district.inventory,
+        "resolved_request": request.id,
     }

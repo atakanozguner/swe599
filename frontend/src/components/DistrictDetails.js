@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 
 const DistrictDetails = () => {
   const { districtId } = useParams();
   const [districtDetails, setDistrictDetails] = useState(null);
   const [requests, setRequests] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDistrictData = async () => {
@@ -32,6 +36,12 @@ const DistrictDetails = () => {
       <h2>
         {districtDetails.name} - District ID: {districtDetails.id}
       </h2>
+      <button
+        className="btn btn-secondary mt-3"
+        onClick={() => navigate(`/districts/${districtId}/inventory`)}
+        >
+        Manage District Inventory
+      </button>
       <p>Latitude: {districtDetails.latitude}</p>
       <p>Longitude: {districtDetails.longitude}</p>
       <p>Requests Count: {districtDetails.request_count}</p>
