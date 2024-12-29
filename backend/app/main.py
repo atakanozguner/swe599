@@ -184,6 +184,7 @@ def submit_request(
             priority=priority,
             latitude=request.latitude,
             longitude=request.longitude,
+            quantity=request.quantity,
             tckn=request.tckn,
             notes=request.notes,
             timestamp=datetime.now(),

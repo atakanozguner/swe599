@@ -19,6 +19,7 @@ class RequestCreate(BaseModel):
     # priority: int
     latitude: float
     longitude: float
+    quantity: int
     tckn: Optional[str]
     notes: Optional[str]
 
@@ -30,6 +31,7 @@ class RequestResponse(BaseModel):
     priority: int
     latitude: float
     longitude: float
+    quantity: int
     tckn: Optional[str]
     notes: Optional[str]
     timestamp: datetime
@@ -53,6 +55,7 @@ class DistrictResponse(BaseModel):
     latitude: float
     longitude: float
     inventory: Dict[str, int]
+    request_count: int
 
     class Config:
         orm_mode = True

@@ -23,6 +23,7 @@ class Request(Base):
     priority = Column(Integer, nullable=False)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
+    quantity = Column(Integer, nullable=False, default=1)
     tckn = Column(String, nullable=True)
     notes = Column(Text)
     timestamp = Column(DateTime, default=datetime.utcnow)

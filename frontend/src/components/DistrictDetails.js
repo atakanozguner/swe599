@@ -42,8 +42,9 @@ const DistrictDetails = () => {
         <ul className="list-group">
           {requests.map((req) => (
             <li key={req.id} className="list-group-item">
-              <strong>Type:</strong> {req.type} - <strong>Subtype:</strong> {req.subtype} -{" "}
+              <strong>Type:</strong> {req.type} - <strong>Subtype:</strong> {req.subtype} - <strong>Quantity:</strong> {req.quantity} - <strong>Timestamp:</strong> - {" "}{" "} 
               <strong>Status:</strong> {req.status}
+
             </li>
           ))}
         </ul>

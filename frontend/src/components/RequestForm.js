@@ -20,6 +20,7 @@ const RequestForm = () => {
     subtype: "",
     latitude: 41.0082, // Default latitude for Istanbul
     longitude: 28.9784, // Default longitude for Istanbul
+    quantity: 1,
     tckn: "",
     notes: "",
     size: "",
@@ -169,6 +170,7 @@ const RequestForm = () => {
         : formData.subtype,
       latitude: formData.latitude,
       longitude: formData.longitude,
+      quantity: formData.quantity,
       tckn: formData.tckn,
       notes: formData.notes,
     };
@@ -287,6 +289,20 @@ const RequestForm = () => {
           </div>
         )}
 
+        {/* Quantity Input */}
+        <div className="mb-3">
+            <label className="form-label">Quantity Needed: (persons per day for food & water, units for others) </label>
+            <input
+                type="number"
+                className="form-control"
+                value={formData.quantity}
+                onChange={(e) =>
+                    setFormData({ ...formData, quantity: parseInt(e.target.value, 10) })
+                }
+                placeholder="Enter quantity (persons per day for food & water, units for others)"
+                min="1"
+            />
+        </div>
         {/* TCKN Text Box */}
         <div className="mb-3">
           <label className="form-label">TCKN:</label>
