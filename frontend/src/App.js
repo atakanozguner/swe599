@@ -8,6 +8,7 @@ import Dashboard from "./components/Dashboard";
 import Districts from "./components/Districts";
 import DistrictDetails from "./components/DistrictDetails";
 import InventoryManager from "./components/InventoryManager";
+import TransferInventory from "./components/TransferInventory";
 
 
 const App = () => {
@@ -17,6 +18,7 @@ const App = () => {
   // Check login status on initial load
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
     const savedUsername = localStorage.getItem("username");
     if (token && savedUsername) {
       setIsLoggedIn(true);
@@ -36,6 +38,8 @@ const App = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
   };
+
+  const isAdmin = () => role === "admin";
 
   return (
     <Router>
@@ -64,7 +68,11 @@ const App = () => {
         />
         <Route
           path="/districts/:districtId/inventory"
-          element={isLoggedIn ? <InventoryManager /> : <Navigate to="/login" replace />}
+          element={isLoggedIn && isAdmin() ? <InventoryManager /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/transfer-inventory"
+          element={isLoggedIn && isAdmin() ? <TransferInventory /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/"
