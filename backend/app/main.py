@@ -289,12 +289,11 @@ def update_district_inventory(
     if not isinstance(current_inventory, dict):
         current_inventory = {}
 
-    # Normalize item names to lowercase
     normalized_inventory_update = {
-        item.lower(): quantity for item, quantity in inventory_update.items()
+        item: quantity for item, quantity in inventory_update.items()
     }
     normalized_current_inventory = {
-        item.lower(): quantity for item, quantity in current_inventory.items()
+        item: quantity for item, quantity in current_inventory.items()
     }
 
     # Update inventory incrementally
@@ -324,50 +323,113 @@ def update_district_inventory(
     }
 
 
-@app.post("/districts/{district_id}/resolve-request/{request_id}")
-def resolve_request(district_id: int, request_id: int, db: Session = Depends(get_db)):
-    """
-    Resolve a specific request by deducting quantities from district inventory.
-    """
-    district = db.query(models.District).filter_by(id=district_id).first()
-    if not district:
-        raise HTTPException(status_code=404, detail="District not found")
-
-    request = db.query(models.Request).filter_by(id=request_id).first()
+@app.post("/requests/{request_id}/resolve")
+def resolve_request(request_id: int, db: Session = Depends(get_db)):
+    request = db.query(models.Request).filter(models.Request.id == request_id).first()
     if not request:
         raise HTTPException(status_code=404, detail="Request not found")
 
     if request.status == "resolved":
-        raise HTTPException(status_code=400, detail="Request already resolved")
+        raise HTTPException(status_code=400, detail="Request is already resolved")
 
-    # Get district inventory
-    current_inventory: Dict[str, int] = district.inventory or {}
-    if not isinstance(current_inventory, dict):
-        current_inventory = {}
+    # Fetch the district inventory
+    district = (
+        db.query(models.District)
+        .filter(models.District.id == request.relatedDistrict)
+        .first()
+    )
+    if not district:
+        raise HTTPException(status_code=404, detail="Related district not found")
 
-    # Deduct request quantities from inventory
-    item = request.subtype  # Assuming subtype matches inventory item name
-    required_quantity = request.quantity
-    if current_inventory.get(item, 0) < required_quantity:
+    inventory = district.inventory or {}
+
+    # Construct the inventory key
+    inventory_key = f"{request.type} - {request.subtype}"
+
+    # Check if inventory is sufficient
+    if inventory.get(inventory_key, 0) < request.quantity:
         raise HTTPException(
             status_code=400,
-            detail=f"Not enough {item} in inventory. Required: {required_quantity}, Available: {current_inventory.get(item, 0)}",
+            detail=f"Insufficient inventory for {inventory_key}. Needed: {request.quantity}, Available: {inventory.get(inventory_key, 0)}",
         )
-    current_inventory[item] -= required_quantity
 
-    # Remove item if quantity drops to zero
-    if current_inventory[item] == 0:
-        del current_inventory[item]
+    # Deduct items from inventory
+    inventory[inventory_key] -= request.quantity
+    district.inventory = {
+        k: v for k, v in inventory.items() if v > 0
+    }  # Remove items with zero quantity
 
-    # Update inventory and request status
-    district.inventory = current_inventory
+    # Mark request as resolved
     request.status = "resolved"
+
     db.commit()
     db.refresh(district)
     db.refresh(request)
 
+    return {"message": "Request resolved successfully", "inventory": district.inventory}
+
+
+@app.post("/districts/{source_district_id}/transfer/{target_district_id}")
+def transfer_inventory(
+    source_district_id: int,
+    target_district_id: int,
+    transfer_data: Dict[str, int],  # Key: item, Value: quantity
+    db: Session = Depends(get_db),
+):
+    """
+    Transfer inventory items from one district to another.
+    """
+    # Fetch source district
+    source_district = (
+        db.query(models.District)
+        .filter(models.District.id == source_district_id)
+        .first()
+    )
+    if not source_district:
+        raise HTTPException(status_code=404, detail="Source district not found")
+
+    # Fetch target district
+    target_district = (
+        db.query(models.District)
+        .filter(models.District.id == target_district_id)
+        .first()
+    )
+    if not target_district:
+        raise HTTPException(status_code=404, detail="Target district not found")
+
+    # Validate and update source district's inventory
+    source_inventory = source_district.inventory or {}
+    if not isinstance(source_inventory, dict):
+        source_inventory = {}
+
+    for item, quantity in transfer_data.items():
+        if source_inventory.get(item, 0) < quantity:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient inventory in source district for {item}. Needed: {quantity}, Available: {source_inventory.get(item, 0)}",
+            )
+        source_inventory[item] -= quantity
+
+    # Remove items with zero quantity
+    source_inventory = {k: v for k, v in source_inventory.items() if v > 0}
+
+    # Update target district's inventory
+    target_inventory = target_district.inventory or {}
+    if not isinstance(target_inventory, dict):
+        target_inventory = {}
+
+    for item, quantity in transfer_data.items():
+        target_inventory[item] = target_inventory.get(item, 0) + quantity
+
+    # Save changes to both districts
+    source_district.inventory = source_inventory
+    target_district.inventory = target_inventory
+    db.commit()
+    db.refresh(source_district)
+    db.refresh(target_district)
+
     return {
-        "message": "Request resolved successfully",
-        "inventory": district.inventory,
-        "resolved_request": request.id,
+        "message": "Transfer successful",
+        "source_inventory": source_district.inventory,
+        "target_inventory": target_district.inventory,
     }
